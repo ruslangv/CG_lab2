@@ -1,0 +1,136 @@
+<HTML>
+<BODY>
+<p>lab2 | Golov | IU8-51</p>
+<canvas id='lab2' width='1500' height='1000'>
+<script>
+var canvas = document.getElementById('lab2');	
+var ctx = canvas.getContext('2d');
+alert('Click the mouse button for rasterization')
+var pangle = [];
+var pcount = 0;
+var fcount = 0;
+ctx.fillStyle = "white";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+canvas.addEventListener("click", onClick);
+
+
+var Point = function(x, y) 
+{
+	this.x = x;
+	this.y = y;
+}
+
+
+function sign(x) 
+{
+	return (x > 0) ? 1 : (x < 0) ? -1 : 0;
+}
+
+
+function drawLine(x0, y0, x1, y1)
+{
+	var x, y, dx, dy, incx, incy, pdx, pdy, es, el, error;
+	
+	dx = x1 - x0; 
+	dy = y1 - y0; 	
+	incx = sign(dx);
+	incy = sign(dy);
+	
+	if (dx < 0) dx = Math.abs(dx);
+	
+	if (dy < 0) dy = Math.abs(dy);
+	
+	if(dx > dy) 
+	{
+		pdx = incx; 
+		pdy = 0;
+		es = dy; 
+		el = dx;	
+	}
+	else 
+	{
+		pdx = 0;	
+		pdy = incy;
+		es = dx;
+		el = dy; 
+	}
+	
+	x = x0;
+	y = y0;
+	error = el / 2;
+	ctx.fillRect(x, y, 1, 1);
+	
+	for (t = 0; t < el; t++) 
+	{
+		error -= es;
+		
+		if (error < 0)
+		{
+			error += el;
+			x += incx; 
+			y += incy;
+		}
+		else
+		{
+			x += pdx; 
+			y += pdy; 
+		}
+		
+		ctx.fillRect(x, y, 1, 1);
+	}
+}
+
+
+function pixelFill(x, y)
+{	
+	if (ctx.getImageData(x, y, 1, 1).data[0] != 0)
+	{
+		ctx.fillRect(x, y, 1, 1);
+		pixelFill(x-1, y);
+		pixelFill(x+1, y);
+		pixelFill(x, y-1);
+		pixelFill(x, y+1);
+	}	
+}
+
+
+function onClick()
+{	
+	ctx.fillStyle = "black";	
+	
+	if (event.which == 1)
+	{			
+		var x = event.offsetX;		
+		var y = event.offsetY;		
+		let p = new Point(x, y);
+		
+		pangle.push(p);
+		fcount = 0;
+		pcount++;
+		
+		if (pcount > 1)
+		{
+			drawLine(pangle[pcount-1].x, pangle[pcount-1].y, pangle[pcount-2].x, pangle[pcount-2].y);
+		}		
+	}
+	
+	if (event.which == 2)
+	{			
+		drawLine(pangle[pcount-1].x, pangle[pcount-1].y, pangle[0].x, pangle[0].y);	
+		fcount++;					
+	}
+	
+	if (event.which == 2 & fcount > 1)
+	{
+		var x = event.offsetX;		
+		var y = event.offsetY;
+		
+		pixelFill(x, y);
+		fcount = 0;
+	}
+}
+
+</script>
+</canvas>
+</BODY>
+</HTML>
